@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+
+            user-select: none;
+        }:root {
+            --BG: hsl(0, 0%, 20%);
+            --lightBG: hsl(0, 0%, 30%);
+            --line: hsl(0, 0%, 95%);
+            --text: hsl(0, 0%, 95%);
+        }
+        body {
+            overflow: hidden;
+        }
+
+        #canvas {
+            width: 100vw;
+            height: 100vh;
+
+            background-color: var(--BG);
+        }
+
+        #parameters {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+
+            color: white;
+        }
+        #parameters h2 {
+            margin-bottom: 10px;
+
+            font-size: 48px;
+        }
+        #parameters label {
+            display: block;
+
+            margin-left: 10px;
+            margin-bottom: 5px;
+
+            font-size: 48px;
+
+            transition: 0.3s;
+        }
+        #parameters label:hover {
+            scale: 1.1;
+        }
+        #parameters input{
+            width: 53.4px;
+            padding: 5px;
+
+            background-color: transparent;
+
+            border: 0px solid var(--line);
+            border-radius: 5px;
+
+            color: var(--text);
+            font-size: 48px;
+            text-align: center;
+
+            transition: 0.3s background-color;
+            box-sizing: border-box;
+        }
+        #parameters input:hover {
+            background-color: var(--lightBG);
+        }
+        #parameters input:focus {
+            background-color: var(--lightBG);
+            
+            outline: none;
+        }
+        #parameters input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="parameters">
+        <h2> - 파라미터 - </h2>
+        <label for="input_a">첫째항 :
+            <input id="input_a" type="number" placeholder="첫째항을 입력해주세요" value="1"></input>
+        </label>
+        <label for="input_d">공차 :
+            <input id="input_d" type="number" placeholder="공차를 입력해주세요" value="2"></input>
+        </label>
+        <label for="input_n">길이 :
+            <input id="input_n" type="number" placeholder="길이를 입력해주세요" value="20"></input>
+        </label>
+        <label for="input_grid">그리드 크기 :
+            <input id="input_grid" type="number" placeholder="그리드 크기를 입력해주세요" value="25"></input>
+        </label>
+    </div>
+
+
+
+    <script>
+        // 요소 가져오기
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const input = document.querySelectorAll('input');
+        const input_a = document.getElementById('input_a');
+        const input_d = document.getElementById('input_d');
+        const input_n = document.getElementById('input_n');
+        const input_grid = document.getElementById('input_grid');
+
+        input.forEach(el => {
+            el.addEventListener('input', () => {
+                // input의 value의 px을 계산해서 이 값만큼 width 조정
+                el.style.width = ((el.value.length + 2) * 26.7) + 'px';
+
+                // 그래프 다시 그리기
+                draw();
+            });
+        });
+        input.forEach(el => {
+            // input의 value의 px을 계산해서 이 값만큼 width 조정
+            el.style.width = ((el.value.length + 2) * 26.7) + 'px';
+
+            // 그래프 다시 그리기
+            draw();
+        });
+
+        // 화면이 변경될 떄 마다 그리기
+        window.addEventListener('resize', function() {
+            draw();
+        });
+
+        // 캔버스에 그리드 그리기
+        function drawGrid() {
+            // 캔버스 크기 설정
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            ctx.strokeStyle = 'hsl(0, 0%, 30%)';
+            ctx.lineWidth = 1;
+
+            // 기본 그리드
+            for (let i = 0; i < canvas.width; i += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+            }
+            for (let i = 0; i < canvas.height; i += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+
+            // 5칸짜리 두꺼운 그리드
+            ctx.strokeStyle = 'hsl(0, 0%, 35%)';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < canvas.width; i += gridSize*5) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+            }
+            for (let i = 0; i < canvas.height; i += gridSize*5) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+        }
+        
+
+        // 캔버스에 그래프 그리기
+        function drawGraph() {
+            const gridSize = Number(input_grid.value);
+            // 그래프 시작점
+            const leftMargine = gridSize*5;
+            const topMargine = gridSize*10;
+            let y = topMargine;
+            let n = input_n.value;
+
+            // 첫째항, 공차
+            let a = Number(input_a.value);
+            let d = Number(input_d.value);
+            
+            // 그래프 그리기
+            ctx.strokeStyle = 'hsl(0, 0%, 95%)';
+            ctx.lineWidth = 2;
+            const startPoint = a;
+            const endPoint = (a + d * n);
+
+            // 그래프 그리기
+            ctx.beginPath();
+            ctx.moveTo(leftMargine, topMargine - startPoint*gridSize);
+            ctx.lineTo(leftMargine + n * 50, topMargine - endPoint*gridSize);
+            ctx.stroke();
+        }
+        // 그리기
+        function draw() {
+            drawGrid();
+            drawGraph();
+        }
+    </script>
+</body>
+</html>
