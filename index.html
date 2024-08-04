@@ -79,12 +79,42 @@
         #parameters input::-webkit-inner-spin-button {
             -webkit-appearance: none;
         }
+        #parameters select {
+            width: auto;
+            padding: 10px;
+
+            background-color: transparent;
+
+            border: 0px solid var(--line);
+            border-radius: 5px;
+
+            color: var(--text);
+            font-size: 48px;
+            text-align: center;
+
+            transition: 0.3s background-color;
+            box-sizing: border-box;
+        }
+        #parameters select:hover {
+            background-color: var(--lightBG);
+        }
+        #parameters select:focus {
+            background-color: var(--lightBG);
+            
+            outline: none;
+        }
     </style>
 </head>
 <body>
     <canvas id="canvas"></canvas>
     <div id="parameters">
         <h2> - 파라미터 - </h2>
+        <label for="input_type">수열 :
+            <select id="input_type" onchange="draw();">
+                <option value="arithmetic">등차수열</option>
+                <option value="geometric">등비수열</option>
+            </select>
+        </label>
         <label for="input_a">첫째항 :
             <input id="input_a" type="number" placeholder="첫째항을 입력해주세요" value="2"></input>
         </label>
@@ -205,44 +235,87 @@
             let y = topMargine;
             let n = input_n.value;
 
-            // 첫째항, 공차
-            let a = input_a.value/1;
-            let d = input_d.value/1;
-            // 계산
-            const startPoint = a;
-            const endPoint = (a + d * n);
-            
-            // 배경 칠하기
-            ctx.strokeStyle = 'hsla(0, 100%, 70%, 25%)';
-            ctx.lineWidth = 2;
-            for (let i = 0; i <= n*gridSize; i += 2) {
+            if (document.getElementById('input_type').value === 'arithmetic') {
+                // 첫째항, 공차
+                let a = input_a.value/1;
+                let d = input_d.value/1;
+                // 계산
+                const startPoint = a;
+                const endPoint = (a + d * n);
+                
+                // 배경 칠하기
+                ctx.strokeStyle = 'hsla(0, 100%, 70%, 25%)';
+                ctx.lineWidth = 2;
+                for (let i = 0; i <= n*gridSize; i += 2) {
+                    ctx.beginPath();
+                    ctx.moveTo(leftMargine + i, topMargine);
+                    ctx.lineTo(leftMargine + i, topMargine - (startPoint*gridSize + d*i));
+                    ctx.stroke();
+                }
+                // 등차수열 그래프 그리기
+                ctx.strokeStyle = 'hsl(0, 0%, 95%)';
+                ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.moveTo(leftMargine + i, topMargine);
-                ctx.lineTo(leftMargine + i, topMargine - (startPoint*gridSize + d*i));
+                ctx.moveTo(leftMargine, topMargine - startPoint*gridSize);
+                ctx.lineTo(leftMargine + n*gridSize, topMargine - endPoint*gridSize);
+                ctx.stroke();
+                // n = 0 그리기
+                ctx.beginPath();
+                ctx.moveTo(leftMargine, topMargine); // 원점에서
+                ctx.lineTo(leftMargine, topMargine - startPoint*gridSize); // 첫째항까지 세로선
+                ctx.stroke();
+                // 바닥 그리기
+                ctx.beginPath();
+                ctx.moveTo(leftMargine, topMargine); // 원점에서
+                ctx.lineTo(leftMargine + n*gridSize, topMargine); // n까지 가로선
+                ctx.stroke();
+                // n = 마지막 그리기
+                ctx.beginPath();
+                ctx.moveTo(leftMargine + n*gridSize, topMargine); // n까지 가로선에서
+                ctx.lineTo(leftMargine + n*gridSize, topMargine - endPoint*gridSize); // 마지막 항까지 세로선
+                ctx.stroke();
+            } else {
+                // 첫째항, 공비
+                let a = input_a.value/1;
+                let r = input_d.value/1;
+                // 계산
+                const startPoint = a;
+                const endPoint = (a * Math.pow(r, n));
+                
+                // 배경 칠하기
+                ctx.strokeStyle = 'hsla(0, 100%, 70%, 25%)';
+                ctx.lineWidth = 2;
+                for (let i = 0; i <= n*gridSize; i += 2) {
+                    ctx.beginPath();
+                    ctx.moveTo(leftMargine + i, topMargine);
+                    ctx.lineTo(leftMargine + i, topMargine - (startPoint*gridSize * Math.pow(r, i/gridSize)));
+                    ctx.stroke();
+                }
+                // 등비수열 그래프 그리기
+                ctx.strokeStyle = 'hsl(0, 0%, 95%)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(leftMargine, topMargine - startPoint * gridSize);
+                for (let i = 0; i <= n; i += 0.2) {
+                    ctx.lineTo(leftMargine + i * gridSize, topMargine - (a * Math.pow(r, i) * gridSize));
+                }
+                ctx.stroke();
+                // n = 0 그리기
+                ctx.beginPath();
+                ctx.moveTo(leftMargine, topMargine); // 원점에서
+                ctx.lineTo(leftMargine, topMargine - startPoint*gridSize); // 첫째항까지 세로선
+                ctx.stroke();
+                // 바닥 그리기
+                ctx.beginPath();
+                ctx.moveTo(leftMargine, topMargine); // 원점에서
+                ctx.lineTo(leftMargine + n*gridSize, topMargine); // n까지 가로선
+                ctx.stroke();
+                // n = 마지막 그리기
+                ctx.beginPath();
+                ctx.moveTo(leftMargine + n*gridSize, topMargine); // n까지 가로선에서
+                ctx.lineTo(leftMargine + n*gridSize, topMargine - endPoint*gridSize); // 마지막 항까지 세로선
                 ctx.stroke();
             }
-            // 등차수열 그래프 그리기
-            ctx.strokeStyle = 'hsl(0, 0%, 95%)';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(leftMargine, topMargine - startPoint*gridSize);
-            ctx.lineTo(leftMargine + n*gridSize, topMargine - endPoint*gridSize);
-            ctx.stroke();
-            // n = 0 그리기
-            ctx.beginPath();
-            ctx.moveTo(leftMargine, topMargine); // 원점에서
-            ctx.lineTo(leftMargine, topMargine - startPoint*gridSize); // 첫째항까지 세로선
-            ctx.stroke();
-            // 바닥 그리기
-            ctx.beginPath();
-            ctx.moveTo(leftMargine, topMargine); // 원점에서
-            ctx.lineTo(leftMargine + n*gridSize, topMargine); // n까지 가로선
-            ctx.stroke();
-            // n = 마지막 그리기
-            ctx.beginPath();
-            ctx.moveTo(leftMargine + n*gridSize, topMargine); // n까지 가로선에서
-            ctx.lineTo(leftMargine + n*gridSize, topMargine - endPoint*gridSize); // 마지막 항까지 세로선
-            ctx.stroke();
         }
         function drawAfter() {
             // 선언
@@ -303,9 +376,9 @@
         // 마우스 휠로 그리드 크기 조절
         canvas.addEventListener('wheel', (e) => {
             if (e.deltaY > 0) {
-                // 10 이하로 내려가지 않게 조절
-                if (input_grid.value - 2 < 10) {
-                    input_grid.value = 10;
+                // 1 이하로 내려가지 않게 조절
+                if (input_grid.value - 2 < 1) {
+                    input_grid.value = 1;
                 } else {
                     input_grid.value = input_grid.value/1 - 2;
                 }
